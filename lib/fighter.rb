@@ -77,6 +77,3 @@ class Fighter
   end
 
 end
-
-f = Fighter.new 'http://www.sherdog.com/fighter/Vitor-Belfort-156'
-puts f.to_json
