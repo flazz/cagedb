@@ -1,67 +1,18 @@
-require 'ruby-debug'
-require 'set'
 require 'open-uri'
 require 'nokogiri'
-
-$urls = {}
-
-def print_record url
-  return if $urls[url]
-
-  puts url.inspect
-  doc = Nokogiri::HTML open(url)
-  $urls[url] = true
-
-  min_col_set = %w(Result Opponent Method Date Round Time).to_set
-
-  table = doc.css("h2:contains('Mixed martial arts record') ~ table",
-                  "h2:contains('MMA records') ~ table").find do |table|
-    headers = table.css("th", 'td').map { |col| col.content }
-    headers.to_set.superset? min_col_set
-  end
-
-  rows = table.css("tr")
-  headings = rows.shift.css('th', 'td').map { |h| h.content }
-
-  # the list of fights
-  records = []
-
-  records = rows.map do |row|
-    record = {}
-
-    row.css('td').each_with_index do |col, i|
-      heading = headings[i]
-
-      if heading == "Opponent" and col.css('a')
-        record['url'] = "http://en.wikipedia.org#{col.css('a').last['href']}"
-      end
-
-      record[heading] = col.content
-    end
-
-    record
-  end
-
-  puts doc.css('h1').first.content
-
-  records.each do |r|
-    puts r.values_at('Result', 'Opponent', 'Round', 'Time').join("\t")
-  end
-
-  puts
-  records.select { |r| r['url'] }.each { |r| print_record r['url'] }
-end
+require 'json'
 
 class Fighter
 
   def initialize url
+    @url = url
     @doc = Nokogiri::HTML open(url)
   end
 
-  def stats
+  def record
     fields = [:result, :opponent, :method, :event, :date, :round, :time]
 
-    table = @doc.css("#fighter_stat")
+    table = @doc.css("#fighter_stat table").first
     rows = table.css('tr')
     rows.shift
 
@@ -69,13 +20,25 @@ class Fighter
 
       fight = {}
       row.css('td').each_with_index do |col, i|
+        field = fields[i]
 
-        fight[ fields[i] ] = if [:opponent, :event].include? fields[i]
-                               { :link => col.css('a').first['href'].strip,
-                                 :name => col.content.strip }
-                             else
-                               col.content.strip
-                             end
+        fight[field] = case field
+                       when :opponent
+                         fight[:opponent_link] = col.css('a').first['href'].strip
+                         col.content.strip
+                       when :event
+                         fight[:event_link] = col.css('a').first['href'].strip
+                         col.content.strip
+                       when :round then col.content.strip.to_i
+                       when :date then Date.parse col.content.strip
+                       when :time
+                         min, sec = col.content.strip.split(':').map &:to_i
+                         min * 60 + sec
+                       when :result
+                         col.content.strip[/^..(Win|Loss)$/, 1]
+                       else
+                         col.content.strip
+                       end
 
       end
 
@@ -84,8 +47,36 @@ class Fighter
 
   end
 
+  def profile
+    table = @doc.css("#fighter_profile table").first
+    table.css('tr').inject({}) do |acc, row|
+      name, value = row.css('td').map { |td| td.content.strip }
+      name.downcase!
+
+      unless %(record wins losses sherdog\ store).include? name
+
+        acc[name] = case name
+                    when 'height' then value[/\((\d+)cm\)/, 1].to_i
+                    when 'weight' then value[/\((\d+)kg\)/, 1].to_i
+                    when 'birth date' then Date.parse value
+                    else value
+                    end
+
+      end
+
+      acc
+    end
+
+  end
+
+  def to_json *a
+    { :link => @url,
+      :profile => profile,
+      :record => record
+    }.to_json *a
+  end
+
 end
 
 f = Fighter.new 'http://www.sherdog.com/fighter/Vitor-Belfort-156'
-require 'pp'
-pp f.stats
+puts f.to_json
