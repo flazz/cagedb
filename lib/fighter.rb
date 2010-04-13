@@ -3,10 +3,12 @@ require 'nokogiri'
 require 'json'
 
 class Fighter
+  attr_reader :doc, :url, :id
 
   def initialize url
-    @url = url
     @doc = Nokogiri::HTML open(url)
+    @url = url
+    @id = url[%r{fighter/(.+)$}, 1]
   end
 
   def record
@@ -32,8 +34,15 @@ class Fighter
                        when :round then col.content.strip.to_i
                        when :date then Date.parse col.content.strip
                        when :time
-                         min, sec = col.content.strip.split(':').map &:to_i
-                         min * 60 + sec
+                         t_str = col.content.strip
+
+                         case t_str
+                         when /\d+:\d+/
+                           min, sec = t_str.split(':').map &:to_i
+                           min * 60 + sec
+                         else t_str
+                         end
+
                        when :result
                          col.content.strip[/^..(Win|Loss)$/, 1]
                        else
@@ -67,13 +76,6 @@ class Fighter
       acc
     end
 
-  end
-
-  def to_json *a
-    { :link => @url,
-      :profile => profile,
-      :record => record
-    }.to_json *a
   end
 
 end

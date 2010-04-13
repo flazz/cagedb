@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+require 'fighter'
+require 'couchrest'
+
+db = CouchRest.database! 'http://127.0.0.1:5984/mma-stat'
+f = Fighter.new 'http://www.sherdog.com/fighter/Vitor-Belfort-156'
+db.save_doc({
+  "_id" => f.id,
+  "uri" => f.url,
+  "profile" => f.profile,
+  "record" => f.record
+})
+
+links = f.record.map { |r| "http://www.sherdog.com#{r[:opponent_link]}" }.uniq
+
+links.each do |link|
+ o = Fighter.new link
+ db.save_doc({
+   "_id" => o.id,
+   "uri" => o.url,
+   "profile" => o.profile,
+   "record" => o.record
+ })
+end
