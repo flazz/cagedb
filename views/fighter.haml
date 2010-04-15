@@ -21,7 +21,7 @@
             kg
             %span.common-unit
               (
-              = (profile[field] * 0.45359237).round
+              = (profile[field] / 0.45359237).round
               lb
               )
           - when 'height'
@@ -56,6 +56,8 @@
           - when 'event'
             %a{:href => fight['event_link']}
               = fight[field]
+          - when 'date'
+            %span.simple-value= fight[field]
           - else
             = fight[field]
 
