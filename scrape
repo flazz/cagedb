@@ -17,7 +17,7 @@ links.each do |link|
  o = Fighter.new link
  db.save_doc({
    "_id" => o.id,
-   "uri" => o.url,
+   "sherdog_uri" => o.url,
    "profile" => o.profile,
    "record" => o.record
  })

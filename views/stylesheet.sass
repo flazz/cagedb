@@ -1,0 +1,43 @@
+!dark_gray = #2D2828
+!mellow_white = #EAE8E9
+!cool_blue = #58B0FF
+
+body
+  background-color = !dark_gray
+  color = !mellow_white
+  font-family: "Museo Sans", "Helvetica", sans-serif
+
+#app-title
+  font-family: "Museo"
+  font-weight: lighter
+  .navigation
+    a
+      color = !cool_blue
+
+a
+  color = !cool_blue
+  &:visited
+    color = !cool_blue * 0.6
+
+
+table.profile
+  td,th
+    padding: 1ex
+
+table.record
+  th
+    padding: 0.5ex
+
+th
+  text-align: left
+  background-color = !dark_gray * 0.5
+  color = !mellow_white
+
+td
+  &:contains("Win")
+    color: #0000ff
+  &:contains("Loss")
+    color: #0000ff
+
+.common-unit
+  font-size: 1.5ex

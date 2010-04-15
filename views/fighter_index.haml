@@ -1,0 +1,5 @@
+%ul
+  - @fighters.each do |f|
+    %li
+      %a{ :href => "/fighter/#{f['id']}" }
+        = f['value']

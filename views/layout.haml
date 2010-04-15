@@ -1,0 +1,15 @@
+%html
+  %head
+    %link{:rel => "stylesheet", :href => "/stylesheet.css", :type =>"text/css", :media =>"screen, projection"}
+    %title
+      cageDB:
+      = @title
+  %body
+    #app-title
+      cageDB:
+      %span.navigation
+        %a{:href => '/'} home
+        %a{:href => '/fighter'} fighters
+        %a{:href => '/event'} events
+
+    .content= yield

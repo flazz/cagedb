@@ -11,6 +11,11 @@ class Fighter
     @id = url[%r{fighter/(.+)$}, 1]
   end
 
+  def picture
+    url = @doc.css("#fighter_picture img").first['src']
+    open(url).read
+  end
+
   def record
     fields = [:result, :opponent, :method, :event, :date, :round, :time]
 
@@ -44,7 +49,7 @@ class Fighter
                          end
 
                        when :result
-                         col.content.strip[/^..(Win|Loss)$/, 1]
+                         col.content.strip[/(\w+)$/, 1]
                        else
                          col.content.strip
                        end

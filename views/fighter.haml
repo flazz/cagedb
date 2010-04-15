@@ -1,0 +1,65 @@
+%h1.name= profile['name']
+
+%img.picture{:src => picture_url, :alt => "picture of #{profile['name']}"}
+
+%table.profile
+  - %w(nick\ name birth\ date association city country weight height).each do |field|
+    %tr
+      - if profile[field]
+        %th= field
+        %td
+          = profile[field]
+          - case field
+          - when 'birth date'
+            %span.common-unit
+              (
+              age
+              - days_old = Date.today - Date.parse(profile[field])
+              = days_old.to_i / 365
+              )
+          - when 'weight'
+            kg
+            %span.common-unit
+              (
+              = (profile[field] * 0.45359237).round
+              lb
+              )
+          - when 'height'
+            cm
+            %span.common-unit
+              (
+              = (profile[field] / 30.48).floor
+              '
+              = (profile[field] / 2.54).round % 12
+              "
+              )
+
+%h2 record
+- fields = %w(result opponent method round time event date)
+%table.record
+  %tr
+    - fields.each do |field|
+      %th= field
+  - record.each do |fight|
+    %tr
+      - fields.each do |field|
+        - case field
+        - when 'time'
+          %td
+            - ss = fight[field].to_i
+            - min = ss / 60
+            - sec = ss % 60
+            = "%d:%.2d" %[min,sec]
+        - when 'opponent'
+          %td
+            %a{:href => fight['opponent_link']}
+              = fight[field]
+        - when 'event'
+          %td
+            %a{:href => fight['event_link']}
+              = fight[field]
+        - else
+          %td= fight[field]
+
+%hr/
+%a{:href => sherdog_url} sherdog profile
