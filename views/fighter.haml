@@ -43,23 +43,21 @@
   - record.each do |fight|
     %tr
       - fields.each do |field|
-        - case field
-        - when 'time'
-          %td
+        %td
+          - case field
+          - when 'time'
             - ss = fight[field].to_i
             - min = ss / 60
             - sec = ss % 60
             = "%d:%.2d" %[min,sec]
-        - when 'opponent'
-          %td
+          - when 'opponent'
             %a{:href => fight['opponent_link']}
               = fight[field]
-        - when 'event'
-          %td
+          - when 'event'
             %a{:href => fight['event_link']}
               = fight[field]
-        - else
-          %td= fight[field]
+          - else
+            = fight[field]
 
 %hr/
 %a{:href => sherdog_url} sherdog profile
